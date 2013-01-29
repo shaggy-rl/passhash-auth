@@ -26,41 +26,34 @@ function loadAuthFile(file_name) {
   lines = fs.readFileSync(path).toString().split('\n');
 
   lines.forEach(function (line) {
-    if (line) {
-      fields = line.split(':');
-      hash_auth[fields[0]] = [fields[1], fields[2], fields[3]];
-    }
+    if (!line || line[0] === '#') return;
+
+    fields = line.split(':');
+    hash_auth[fields[0]] = [fields[1], fields[2], fields[3]];
   });
 }
 
 // check if user is in auth file
 function isUser(username) {
-  var user = username,
-      s;
-  (hash_auth[user]) ? s = true : s = false;
-  return s;
+  return !!hash_auth[username];
 }
 
 // check if password given by user is valid
 function checkHashMatch(username, password) {
-  var user = username,
-      pass = password,
-      s;
   /* check if username is valid
    * if it is valid set variables
    * sha512 the digest for a number of iterations
    * check if the digest is equal to the stored hash, setting a boolean to a variable
    */
-  if (isUser(user)) {
-    var salt = hash_auth[user][0],
-        hash = hash_auth[user][1],
-        iterations = hash_auth[user][2],
-        digest = pass;
-    for (var i=0; i <= +iterations; i++) {
-      digest = crypto.createHmac('sha512', salt).update(digest).digest('hex');
-    }
-    (digest === hash) ? s = true : s = false;
-  }
-  return s;
-}
+  if (!isUser(username)) return false;
 
+  var salt = hash_auth[username][0],
+      hash = hash_auth[username][1],
+      iterations = hash_auth[username][2],
+      digest = password;
+  for (var i = 0; i <= +iterations; i++) {
+    digest = crypto.createHmac('sha512', salt).update(digest).digest('hex');
+  }
+
+  return digest === hash;
+}
