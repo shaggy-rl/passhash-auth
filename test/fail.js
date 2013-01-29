@@ -1,10 +1,8 @@
-var hpa = require('../');
+var hpa = require('../'),
+    assert = require('assert');
 
 hpa.loadAuthFile(__dirname + '/test_auth');
 
-console.log('This is should throw an error');
-
-hpa.checkHashMatch('test2', 'badpassword', function(result) {
-  (result == true) ? consol.log('match') : console.error('ERROR');
-  });
-  
+assert.strictEqual(hpa.checkHashMatch('test', 'badpassword'), false, 'ERROR: nonmatch');
+assert.strictEqual(hpa.checkHashMatch('test2', 'badpassword'), false, 'ERROR: nonmatch');
+assert.strictEqual(hpa.checkHashMatch('test3', 'badpassword'), false, 'ERROR: nonmatch');

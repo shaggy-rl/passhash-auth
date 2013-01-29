@@ -1,7 +1,8 @@
-var index = require('../index');
+var hpa = require('../'),
+    assert = require('assert');
 
+hpa.loadAuthFile(__dirname + '/test_auth');
 
-index.loadAuthFile(__dirname + '/test_auth');
-index.checkHashMatch('test', 'test', function(result) {
-  (result == true) ? console.log('match') : console.log('nonmatch');
-  });
+assert.strictEqual(hpa.checkHashMatch('test', 'test'), true, 'ERROR: nonmatch');
+assert.strictEqual(hpa.checkHashMatch('test2', 'test'), true, 'ERROR: nonmatch');
+assert.strictEqual(hpa.checkHashMatch('test3', 'test'), true, 'ERROR: nonmatch');

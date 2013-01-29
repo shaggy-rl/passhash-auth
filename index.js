@@ -16,6 +16,7 @@ var fs = require('fs'),
 
 module.exports.loadAuthFile = loadAuthFile;
 module.exports.checkHashMatch = checkHashMatch;
+module.exports.isUser = isUser;
 
 // function to read auth file in
 function loadAuthFile(file_name) {
@@ -30,15 +31,27 @@ function loadAuthFile(file_name) {
       hash_auth[fields[0]] = [fields[1], fields[2], fields[3]];
     }
   });
-};
+}
+
+// check if user is in auth file
+function isUser(username) {
+  var user = username,
+      s;
+  (hash_auth[user]) ? s = true : s = false;
+  return s;
+}
 
 // check if password given by user is valid
-function checkHashMatch(username, password, cb) {
+function checkHashMatch(username, password) {
   var user = username,
       pass = password,
       s;
-
-  if (hash_auth[user]) {
+  /* check if username is valid
+   * if it is valid set variables
+   * sha512 the digest for a number of iterations
+   * check if the digest is equal to the stored hash, setting a boolean to a variable
+   */
+  if (isUser(user)) {
     var salt = hash_auth[user][0],
         hash = hash_auth[user][1],
         iterations = hash_auth[user][2],
@@ -48,6 +61,6 @@ function checkHashMatch(username, password, cb) {
     }
     (digest === hash) ? s = true : s = false;
   }
-  cb(s);
-};
+  return s;
+}
 
