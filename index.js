@@ -4,8 +4,8 @@
  *
  *  Module to be used to read in hashed passwords generate by passhash. This can be used as a replacement for htpasswd for web apps or easy authentication for standalone apps.
  *
- * Author: Alexander Shagla-McKotch <shagla@gmail.com> 
- * Contributor: Dave Eddy <dave@daveeddy.com> 
+ * Author: Alexander Shagla-McKotch <shagla@gmail.com>
+ * Contributor: Dave Eddy <dave@daveeddy.com>
  *
  *  License: MIT
  */
@@ -50,11 +50,19 @@ function checkHashMatch(username, password) {
 
   var salt = hash_auth[username][0],
       hash = hash_auth[username][1],
-      iterations = hash_auth[username][2],
-      digest = password;
-  for (var i = 0; i <= +iterations; i++) {
+      iterations = +hash_auth[username][2],
+      digest = password,
+      i, il;
+  for (i = 0; i <= iterations; i++) {
     digest = crypto.createHmac('sha512', salt).update(digest).digest('hex');
   }
 
-  return digest === hash;
+  var result = digest.length ^ hash.length;
+  if (result) hash = digest;
+
+  for (i = 0, il = digest.length; i < il; i++) {
+    result |= digest.charCodeAt(i) ^ hash.charCodeAt(i);
+  }
+
+  return result === 0;
 }
