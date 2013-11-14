@@ -11,50 +11,49 @@
  */
 
 // initial varibles and requires
-var fs = require('fs'),
-    crypto = require('crypto'),
-    hash_auth = {};
+var fs = require('fs');
+var crypto = require('crypto');
 
-module.exports.loadAuthFile = loadAuthFile;
-module.exports.checkHashMatch = checkHashMatch;
-module.exports.isUser = isUser;
+module.exports = passhashAuth;
 
-// function to read auth file in
-function loadAuthFile(file_name) {
-  var path = file_name,
-      lines,
-      fields;
-  lines = fs.readFileSync(path).toString().split('\n');
-
-  lines.forEach(function (line) {
-    if (!line || line[0] === '#') return;
-
-    fields = line.split(':');
-    hash_auth[fields[0]] = [fields[1], fields[2], fields[3]];
-  });
+function passhashAuth(s) {
+  var self = this;
+  self.creds = s;
+  if (typeof s === 'string') {
+    // parse the argument as if it is a filename
+    self.creds = {};
+    var lines = fs.readFileSync(s, 'utf-8').split('\n');
+    lines.forEach(function(line) {
+      if (!line || line[0] === '#')
+        return;
+      var fields = line.split(':');
+      self.creds[fields[0]] = {
+        salt: fields[1],
+        hash: fields[2],
+        iterations: fields[3]
+      };
+    });
+  }
 }
 
-// check if user is in auth file
-function isUser(username) {
-  return !!hash_auth[username];
-}
+passhashAuth.prototype.isUser = function isUser(username) {
+  return !!this.creds[username];
+};
 
-// check if password given by user is valid
-function checkHashMatch(username, password) {
+passhashAuth.prototype.checkHashMatch = function checkHashMatch(username, password) {
   /* check if username is valid
    * if it is valid set variables
    * sha512 the digest for a number of iterations
    * check if the digest is equal to the stored hash, setting a boolean to a variable
    */
-  if (!isUser(username)) return false;
+  var creds = this.creds[username];
+  if (!creds)
+    return false;
 
-  var salt = hash_auth[username][0],
-      hash = hash_auth[username][1],
-      iterations = hash_auth[username][2],
-      digest = password;
-  for (var i = 0; i <= +iterations; i++) {
-    digest = crypto.createHmac('sha512', salt).update(digest).digest('hex');
+  var digest = password;
+  for (var i = 0; i <= creds.iterations; i++) {
+    digest = crypto.createHmac('sha512', creds.salt).update(digest).digest('hex');
   }
 
-  return digest === hash;
-}
+  return digest === creds.hash;
+};
