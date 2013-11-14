@@ -11,25 +11,28 @@ Usage
 then
 
 ``` js
-var passhashauth = require('passhash-auth')
+var PasshashAuth = require('passhash-auth')
+var auth = new PasshashAuth('./passhashauth.txt');
 ```
 
 Functions
 ---------
 
-###loadAuthFile(file_name)
+### `new PasshashAuth(databaseFileName)`
+
+Return a new object that can be used to authenticate usernames against the database given
 
 The file should contain lines using the default output format of `passhash`. For reference:
 
     {username}:{salt}:{hash}:{iterations}
 
-###isUser(user_name)
+### `.isUser(username)`
 
-Checks if a given `user_name` is valid. Returns a boolean.
+Checks if a given `username` is valid. Returns a boolean.
 
-###checkHashMatch(user_name, password)
+### `.checkHashMatch(username, password)`
 
-Checks if the given `user_name` and `password` are valid. Returns a boolean.
+Checks if the given `username` and `password` are valid. Returns a boolean.
 
 Example
 -------
@@ -37,14 +40,13 @@ Example
 For this example we will assume the user name and password were obtained from a secure source such as a SSL socket. Due to the `checkHashMatch` function returning a boolean, you can have it execute anything you want depending on the return value. For our example it will print to stdout either `match` or `nonmatch`.
 
 ``` js
-var passhashauth = require('passhash-auth');
+var PasshashAuth = require('passhash-auth');
+var auth = new PasshashAuth(__dirname + '/test_auth');
 
-passhashauth.loadAuthFile(__dirname + '/test_auth');
+var user1 = 'test';
+var pass1 = 'correctPassword';
 
-var user1 = 'test',
-    pass1 = 'correctPassword',
-
-if (passhashauth.checkHashMatch(user1, pass1)) {
+if (auth.checkHashMatch(user1, pass1)) {
     console.log('match');
 } else {
     console.log('nonmatch');
